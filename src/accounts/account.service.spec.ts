@@ -4,6 +4,7 @@ import { CreateAccountDto } from './dto/create-account.dto';
 import { DepositDto } from './dto/deposit.dto';
 import { Account } from './entities/account.entity';
 import { TransferDto } from './dto/transfer.dto';
+import { TransactionDto } from './dto/transaction.dto';
 
 describe('AccountService', () => {
   let service: AccountService;
@@ -134,5 +135,41 @@ describe('AccountService', () => {
       'Insufficient balance',
       0,
     );
+  });
+
+  function testTransaction(
+    accountId: string,
+    expectedTransaction: TransactionDto[],
+  ) {
+    const transactions = service.transaction(accountId);
+    expect(transactions).toEqual(expectedTransaction);
+  }
+
+  it('should show all transactions', () => {
+    service.deposit('1', { amount: 2000 });
+    const date1 = service.getTransactions()[0].date;
+    service.transfer('1', { recipientAccountId: '2', amount: 2000 });
+    const date2 = service.getTransactions()[1].date;
+    const date3 = service.getTransactions()[2].date;
+    service.withdraw('1', { amount: 3000 });
+    const date4 = service.getTransactions()[3].date;
+    service.transfer('2', { recipientAccountId: '1', amount: 5000 });
+    const date5 = service.getTransactions()[4].date;
+    const date6 = service.getTransactions()[5].date;
+    service.withdraw('2', { amount: 1000 });
+    const date7 = service.getTransactions()[6].date;
+
+    testTransaction('1', [
+      { type: '입금', amount: 2000, transactionDate: date1 },
+      { type: '송금', amount: 2000, transactionDate: date2 },
+      { type: '출금', amount: 3000, transactionDate: date4 },
+      { type: '입금', amount: 5000, transactionDate: date6 },
+    ]);
+
+    testTransaction('2', [
+      { type: '입금', amount: 2000, transactionDate: date3 },
+      { type: '송금', amount: 5000, transactionDate: date5 },
+      { type: '출금', amount: 1000, transactionDate: date7 },
+    ]);
   });
 });

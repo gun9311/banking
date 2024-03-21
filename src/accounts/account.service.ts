@@ -4,16 +4,32 @@ import { Account } from './entities/account.entity';
 import { DepositDto } from './dto/deposit.dto';
 import { WithdrawDto } from './dto/withdraw.dto';
 import { TransferDto } from './dto/transfer.dto';
+import { Transaction } from './entities/transaction.entity';
+import { TransactionDto } from './dto/transaction.dto';
 
 @Injectable()
 export class AccountService {
   private accounts: Account[] = [];
+  private IndexId = 1;
+  private transactions: Transaction[] = [];
   public setAccounts(accounts: Account[]): void {
     this.accounts = accounts;
   }
-  private IndexId = 1;
   public setIndexId(id: number) {
     this.IndexId = id;
+  }
+  public getTransactions() {
+    return this.transactions;
+  }
+
+  addTransaction(accountId: string, type: string, amount: number, date: Date) {
+    const newTransaction: Transaction = {
+      accountId: accountId,
+      type: type,
+      amount: amount,
+      date: date,
+    };
+    return newTransaction;
   }
 
   create(createAccountDto: CreateAccountDto): Account {
@@ -31,6 +47,14 @@ export class AccountService {
     if (!account) {
       throw new Error('Account not found');
     }
+
+    const newTransaction = this.addTransaction(
+      accountId,
+      '입금',
+      depositDto.amount,
+      new Date(),
+    );
+    this.transactions.push(newTransaction);
     account.balance += depositDto.amount;
     return account;
   }
@@ -43,6 +67,14 @@ export class AccountService {
     if (account.balance < withdrawDto.amount) {
       throw new Error('Insufficient balance');
     }
+
+    const newTransaction = this.addTransaction(
+      accountId,
+      '출금',
+      withdrawDto.amount,
+      new Date(),
+    );
+    this.transactions.push(newTransaction);
     account.balance -= withdrawDto.amount;
     return account;
   }
@@ -60,9 +92,40 @@ export class AccountService {
     if (sendAccount.balance < transferDto.amount) {
       throw new Error('Insufficient balance');
     }
-    sendAccount.balance -= transferDto.amount;
-    receiveAccount.balance += transferDto.amount;
 
+    const newTransaction = this.addTransaction(
+      accountId,
+      '송금',
+      transferDto.amount,
+      new Date(),
+    );
+    this.transactions.push(newTransaction);
+    sendAccount.balance -= transferDto.amount;
+
+    const newTransaction2 = this.addTransaction(
+      transferDto.recipientAccountId,
+      '입금',
+      transferDto.amount,
+      new Date(),
+    );
+    this.transactions.push(newTransaction2);
+    receiveAccount.balance += transferDto.amount;
     return [sendAccount, receiveAccount];
+  }
+
+  transaction(accountId: string): TransactionDto[] {
+    const idTransactions: TransactionDto[] = [];
+    this.transactions
+      .filter((transaction) => transaction.accountId === accountId)
+      .sort((a, b) => a.date.getTime() - b.date.getTime())
+      .map((transaction) => {
+        const newTransactionDto: TransactionDto = {
+          type: transaction.type,
+          amount: transaction.amount,
+          transactionDate: transaction.date,
+        };
+        idTransactions.push(newTransactionDto);
+      });
+    return idTransactions;
   }
 }
