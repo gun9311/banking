@@ -24,19 +24,23 @@ export class AccountController {
   }
 
   @Post(':accountId/deposit')
-  deposit(@Param('accountId') accountId: string, @Body() depositDto: DepositDto) {
-    return this.accountService.deposit(accountId, depositDto.amount)
+  deposit(
+    @Param('accountId') accountId: number,
+    @Body() depositDto: DepositDto,
+  ) {
+    return this.accountService.deposit(accountId, depositDto);
   }
 
   @Post(':accountId/withdraw')
-  withdraw(@Param('accountId') accountId: string, @Body() withdrawDto: WithdrawDto) {}
+  withdraw(
+    @Param('accountId') accountId: number,
+    @Body() withdrawDto: WithdrawDto,
+  ) {}
 
   @Post()
   transfer(@Body() transferDto: TransferDto) {}
 
-  @Get(@Param )
-  
-
+  @Get(':accountId')
   @Get()
   findAll() {
     return this.accountService.findAll();
