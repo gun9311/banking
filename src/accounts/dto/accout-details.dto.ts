@@ -1,4 +1,4 @@
 export class AccoutDetailsDto {
-  transactionDate: number;
+  transactionDate: Date;
   amount: number;
 }
