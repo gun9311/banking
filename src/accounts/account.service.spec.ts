@@ -172,4 +172,21 @@ describe('AccountService', () => {
       { type: '출금', amount: 1000, transactionDate: date7 },
     ]);
   });
+
+  it('should transact simultaneous request', async () => {
+    const testAccounts1 = await Promise.all([
+      service.deposit('1', { amount: 20000 }),
+      service.withdraw('1', { amount: 10000 }),
+      service.transfer('1', { recipientAccountId: '2', amount: 10000 }),
+    ]);
+    const account = testAccounts1[2][0];
+    expect(account.balance).toEqual(50000);
+
+    expect(() =>
+      Promise.all([
+        service.withdraw('1', { amount: 50000 }),
+        service.transfer('1', { recipientAccountId: '2', amount: 50000 }),
+      ]),
+    ).toThrow('Insufficient balance');
+  });
 });
