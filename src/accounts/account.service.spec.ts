@@ -93,7 +93,7 @@ describe('AccountService', () => {
     testWithdraw('1', { amount: 25000 }, 25000);
     testWithdraw('2', { amount: 1 }, 99999);
     testWithdraw('1', { amount: 5000 }, 20000);
-    testWithdraw('3', { amount: 90 }, 'Account not found');
+    testWithdraw('3', { amount: 100 }, 'Account not found');
     testWithdraw('1', { amount: 100000 }, 'Insufficient balance');
     testWithdraw('2', { amount: 99999 }, 0);
   });
@@ -107,9 +107,9 @@ describe('AccountService', () => {
   ) {
     // 출금 계좌의 잔액 감소, 입금 계좌의 잔액 증가 확인
     if (typeof expectedSenderBalance === 'number') {
-      const accounts = service.transfer(sender, transferDto);
-      const sendAccount = accounts[0];
-      const receiveAccount = accounts[1];
+      service.transfer(sender, transferDto);
+      const sendAccount = service.getAccount(sender);
+      const receiveAccount = service.getAccount(transferDto.recipientAccountId);
       expect(sendAccount.balance).toEqual(expectedSenderBalance);
       expect(receiveAccount.balance).toEqual(expectedReceiverBalance);
     } else {
@@ -170,17 +170,17 @@ describe('AccountService', () => {
   it('should show all transactions', () => {
     // 거래 기록 남기기
     service.deposit('1', { amount: 2000 });
-    const date1 = service.getTransactions()[0].date;
+    const date1 = service.getTransactions(0).date;
     service.transfer('1', { recipientAccountId: '2', amount: 2000 });
-    const date2 = service.getTransactions()[1].date;
-    const date3 = service.getTransactions()[2].date;
+    const date2 = service.getTransactions(1).date;
+    const date3 = service.getTransactions(2).date;
     service.withdraw('1', { amount: 3000 });
-    const date4 = service.getTransactions()[3].date;
+    const date4 = service.getTransactions(3).date;
     service.transfer('2', { recipientAccountId: '1', amount: 5000 });
-    const date5 = service.getTransactions()[4].date;
-    const date6 = service.getTransactions()[5].date;
+    const date5 = service.getTransactions(4).date;
+    const date6 = service.getTransactions(5).date;
     service.withdraw('2', { amount: 1000 });
-    const date7 = service.getTransactions()[6].date;
+    const date7 = service.getTransactions(6).date;
 
     // 거래내역 테스트1, 내용 및 오름차순 정렬 확인
     testTransaction('1', [
@@ -201,21 +201,21 @@ describe('AccountService', () => {
   // 동시처리 테스트
   it('should transact simultaneous request', async () => {
     // 입출송금 동시처리 확인 1
-    const testAccounts1 = await Promise.all([
+    await Promise.all([
       service.deposit('1', { amount: 20000 }),
       service.withdraw('1', { amount: 10000 }),
       service.transfer('1', { recipientAccountId: '2', amount: 10000 }),
     ]);
-    const account1 = testAccounts1[2][0];
+    const account1 = service.getAccount('1');
     expect(account1.balance).toEqual(50000);
 
     // 입출송금 동시처리 확인 2
-    const testAccounts2 = await Promise.all([
+    await Promise.all([
       service.deposit('2', { amount: 20000 }),
       service.withdraw('2', { amount: 10000 }),
       service.transfer('2', { recipientAccountId: '1', amount: 10000 }),
     ]);
-    const account2 = testAccounts2[2][0];
+    const account2 = service.getAccount('2');
     expect(account2.balance).toEqual(110000);
 
     // 동시 전액 출금 및 오류처리 확인 1
@@ -226,11 +226,11 @@ describe('AccountService', () => {
       ]),
     ).toThrow('Insufficient balance');
 
-    // 동시 전액 출금 및 오류처리 확인 2
+    // 동시 전액 이상 출금 및 오류처리 확인 2
     expect(() =>
       Promise.all([
-        service.withdraw('2', { amount: 110000 }),
-        service.transfer('2', { recipientAccountId: '1', amount: 110000 }),
+        service.withdraw('2', { amount: 60000 }),
+        service.transfer('2', { recipientAccountId: '1', amount: 60000 }),
       ]),
     ).toThrow('Insufficient balance');
   });

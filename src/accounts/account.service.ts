@@ -1,7 +1,5 @@
 import { Injectable } from '@nestjs/common';
-
 import { Account } from './entities/account.entity';
-
 import { Transaction } from './entities/transaction.entity';
 import {
   CreateAccountDto,
@@ -16,16 +14,21 @@ export class AccountService {
   private accounts: Account[] = [];
   private IndexId = 1;
   private transactions: Transaction[] = [];
+
   public setAccounts(accounts: Account[]): void {
     this.accounts = accounts;
+  }
+  public getAccount(accountId: string) {
+    return this.accounts.find((account) => account.id === accountId);
   }
   public setIndexId(id: number) {
     this.IndexId = id;
   }
-  public getTransactions() {
-    return this.transactions;
+  public getTransactions(index: number) {
+    return this.transactions[index];
   }
 
+  // 거래내역 기록
   addTransaction(accountId: string, type: string, amount: number, date: Date) {
     const newTransaction: Transaction = {
       accountId: accountId,
@@ -36,6 +39,7 @@ export class AccountService {
     return newTransaction;
   }
 
+  // 계좌 생성
   create(createAccountDto: CreateAccountDto): Account {
     const newAccount: Account = {
       id: (this.IndexId++).toString(),
@@ -46,6 +50,7 @@ export class AccountService {
     return newAccount;
   }
 
+  // 입금
   deposit(accountId: string, depositDto: DepositDto): Account {
     const account = this.accounts.find((account) => account.id === accountId);
     if (!account) {
@@ -63,6 +68,7 @@ export class AccountService {
     return account;
   }
 
+  // 출금
   withdraw(accountId: string, withdrawDto: WithdrawDto): Account {
     const account = this.accounts.find((account) => account.id === accountId);
     if (!account) {
@@ -83,6 +89,7 @@ export class AccountService {
     return account;
   }
 
+  // 송금
   transfer(accountId: string, transferDto: TransferDto): Account[] {
     const sendAccount = this.accounts.find(
       (account) => account.id === accountId,
@@ -117,12 +124,14 @@ export class AccountService {
     return [sendAccount, receiveAccount];
   }
 
+  // 거래내역조회
   transaction(accountId: string): TransactionDto[] {
     const idTransactions: TransactionDto[] = [];
     this.transactions
       .filter((transaction) => transaction.accountId === accountId)
       .sort((a, b) => a.date.getTime() - b.date.getTime())
       .map((transaction) => {
+        // Dto로 반환
         const newTransactionDto: TransactionDto = {
           type: transaction.type,
           amount: transaction.amount,
