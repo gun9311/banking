@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAccountDto } from './dto/create-account.dto';
+
 import { Account } from './entities/account.entity';
-import { DepositDto } from './dto/deposit.dto';
-import { WithdrawDto } from './dto/withdraw.dto';
-import { TransferDto } from './dto/transfer.dto';
+
 import { Transaction } from './entities/transaction.entity';
-import { TransactionDto } from './dto/transaction.dto';
+import {
+  CreateAccountDto,
+  DepositDto,
+  TransactionDto,
+  TransferDto,
+  WithdrawDto,
+} from './dto/account.dto';
 
 @Injectable()
 export class AccountService {

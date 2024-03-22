@@ -1,9 +1,11 @@
 import { Controller, Post, Body, Param, Get } from '@nestjs/common';
 import { AccountService } from './account.service';
-import { CreateAccountDto } from './dto/create-account.dto';
-import { DepositDto } from './dto/deposit.dto';
-import { WithdrawDto } from './dto/withdraw.dto';
-import { TransferDto } from './dto/transfer.dto';
+import {
+  CreateAccountDto,
+  DepositDto,
+  TransferDto,
+  WithdrawDto,
+} from './dto/account.dto';
 
 @Controller('accounts')
 export class AccountController {
@@ -42,24 +44,4 @@ export class AccountController {
   transaction(@Param('accountId') accountId: string) {
     return this.accountService.transaction(accountId);
   }
-
-  // @Get()
-  // findAll() {
-  //   return this.accountService.findAll();
-  // }
-
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.accountService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateAccountDto: UpdateAccountDto) {
-  //   return this.accountService.update(+id, updateAccountDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.accountService.remove(+id);
-  // }
 }

@@ -1,10 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AccountService } from './account.service';
-import { CreateAccountDto } from './dto/create-account.dto';
-import { DepositDto } from './dto/deposit.dto';
 import { Account } from './entities/account.entity';
-import { TransferDto } from './dto/transfer.dto';
-import { TransactionDto } from './dto/transaction.dto';
+import {
+  CreateAccountDto,
+  DepositDto,
+  TransactionDto,
+  TransferDto,
+} from './dto/account.dto';
 
 describe('AccountService', () => {
   let service: AccountService;
